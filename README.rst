@@ -3,16 +3,9 @@ Litematica Command Generator
 ============================
 
 
-.. image:: https://img.shields.io/pypi/v/litematica_command_gen.svg
-        :target: https://pypi.python.org/pypi/litematica_command_gen
-
-
 .. image:: https://github.com/appcreatorguy/litematica_command_gen/actions/workflows/python-build.yml/badge.svg
         :target: https://github.com/appcreatorguy/litematica_command_gen/actions/workflows/python-build.yml
 
-.. image:: https://readthedocs.org/projects/litematica-command-gen/badge/?version=latest
-        :target: https://litematica-command-gen.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
 
 A CLI application to generate give commands for shulker boxes full of items for litematica projects. Used by the lazy survival player :).
 
