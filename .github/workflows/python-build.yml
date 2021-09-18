@@ -1,0 +1,90 @@
+name: build
+
+on:
+    push:
+        branches:
+            - "main"
+            - "develop"
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version: [3.6, 3.7, 3.8, 3.9]
+
+        steps:
+        - uses: actions/checkout@v1
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v2
+          with:
+                python-version: ${{ matrix.python-version }}
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install tox tox-gh-actions
+        - name: Test with tox
+          run: tox
+
+    build_dist:
+        name: Build distributions
+        runs-on: ubuntu-latest
+        steps:
+            - name: Set up Python
+              uses: actions/setup-python@v2
+
+            - uses: actions/checkout@v2
+
+            - name: Install latest pip, setuptools, wheel
+              run: |
+                  python -m pip install --upgrade pip setuptools wheel
+
+            - name: Build wheels
+              run: |
+                  python setup.py bdist_wheel
+                  python setup.py sdist
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v2.2.4
+              with:
+                  name: ${{ matrix.asset_name }}
+                  path: dist/*
+    build_binaries:
+        name: Build binaries
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [windows-2019, ubuntu-20.04]
+                include:
+                    - os: windows-2019
+                      asset_name: litematica_command_gen_windows
+                      executable_mime: "application/vnd.microsoft.portable-executable"
+                    - os: ubuntu-20.04
+                      asset_name: litematica_command_gen_linux
+                      executable_mime: "application/x-executable"
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up latest Python
+              uses: actions/setup-python@v2
+              with:
+                  python-version: "*"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip wheel setuptools
+                  python -m pip install .
+                  python -m pip install pyinstaller
+
+            - name: Build binary
+              run: |
+                  python -m PyInstaller -F --name ${{ matrix.asset_name }} litematica_command_gen/cli.py
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v2.2.4
+              with:
+                name: ${{ matrix.asset_name }}
+                path: dist/${{ matrix.asset_name }}
+

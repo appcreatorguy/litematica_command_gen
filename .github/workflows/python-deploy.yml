@@ -1,0 +1,118 @@
+name: deploy standalone binaries and wheels
+
+on:
+    push:
+        tags:
+            - "*"
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version: [3.6, 3.7, 3.8, 3.9]
+
+        steps:
+        - uses: actions/checkout@v1
+        - name: Set up Python ${{  matrix.python-version }}
+          uses: actions/setup-python@v2
+          with:
+                python-version: ${{  matrix.python-version }}
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install tox tox-gh-actions
+        - name: Test with tox
+          run: tox
+
+    create_release:
+        runs-on: ubuntu-latest
+        outputs:
+            upload_url: ${{  steps.create_release.outputs.upload_url }}
+        steps:
+            - name: Get the version
+              id: get_version
+              run: echo ::set-output name=VERSION::Version ${GITHUB_REF/refs\/tags\//}
+            - uses: actions/checkout@v2
+            - uses: ncipollo/release-action@v1.8.6
+              id: create_release
+              with:
+                  name: ${{  steps.get_version.outputs.VERSION }}
+                  bodyFile: "HISTORY.rst"
+                  token: ${{  secrets.GITHUB_TOKEN }}
+    build_binaries:
+        needs: create_release
+        runs-on: ${{  matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [windows-2019, ubuntu-20.04]
+                include:
+                    - os: windows-2019
+                      asset_name: litematica_command_gen_windows
+                      executable_mime: "application/vnd.microsoft.portable-executable"
+                    - os: ubuntu-20.04
+                      asset_name: litematica_command_gen_linux
+                      executable_mime: "application/x-executable"
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Set up latest Python
+              uses: actions/setup-python@v2
+              with:
+                  python-version: "*"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip wheel setuptools
+                  python -m pip install .
+                  python -m pip install pyinstaller
+
+            - name: Build binary
+              run: |
+                  python -m PyInstaller -F --name ${{  matrix.asset_name }} litematica_command_gen/cli.py
+
+            - name: Upload binary as release asset
+              uses: shogo82148/actions-upload-release-asset@v1.3.1
+              env:
+                  GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{  needs.create_release.outputs.upload_url }}
+                  asset_path: dist/${{  matrix.asset_name }}
+                  asset_name: ${{  matrix.asset_name }}
+                  asset_content_type: ${{  matrix.executable_mime }}
+    build_dist:
+        name: PyPI Upload
+        runs-on: ubuntu-latest
+        needs: create_release
+
+        steps:
+            - name: Get the version
+              id: get_version
+              run: echo ::set-output name=VERSION::litematica_command_gen-${GITHUB_REF/refs\/tags\//}-py3-none-any.whl
+            - uses: actions/checkout@v2
+
+            - name: Set up Python
+              uses: actions/setup-python@v2
+
+            - name: Install latest pip, setuptools, twine + wheel
+              run: |
+                  python -m pip install --upgrade pip setuptools twine wheel
+
+            - name: Build wheels
+              run: |
+                  python setup.py bdist_wheel
+                  python setup.py sdist
+
+
+
+            - name: Upload wheel as release asset
+              uses: shogo82148/actions-upload-release-asset@v1.3.1
+              env:
+                  GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{  needs.create_release.outputs.upload_url }}
+                  asset_path: dist/**.whl
+                  asset_name: ${{  steps.get_version.outputs.VERSION }}
+                  asset_content_type: application/x-wheel+zip
