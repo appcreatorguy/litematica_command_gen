@@ -25,8 +25,7 @@ _____
 
 * Download the .whl file from the latest release_ and install it using the following command, where FILENAME is the name of the file you downloaded.::
     pip install ./[FILENAME].whl
-* Generate a csv material list by holding shift while pressing the 'Write to file' key.
-|button|
+* Generate a csv material list by holding shift while pressing the 'Write to file' key. |button|
 * Run this command::
     litematica-command-gen shulkerbox [PATH]
 * PATH will be the path of the .csv file that litematica generated, ususally located in .minecraft/config/litematica.
