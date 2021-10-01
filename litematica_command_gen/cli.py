@@ -11,15 +11,30 @@ Options:
     --verbose      Print more text.
 
 """
-from __init__ import __version__
 from docopt import docopt
 
-from litematica_command_gen import main
+from . import __version__ as VERSION
+from .command_generator import generate_command_from_file
 
-if __name__ == "__main__":
-    args = docopt(__doc__, version=__version__)
+
+def main():
+    args = docopt(__doc__, version=VERSION)
     if args["--verbose"]:
         print("Running with arguments: ", end="")
         print("".join(["{0}: {1}, ".format(k, v) for k, v in args.items()]))
-    command = main(args["shulkerbox"], args["chest"], args["<file>"], args["--verbose"])
+    command = generate_command_from_file(
+        True, args["chest"], args["<file>"], args["--verbose"]
+    )
     print(command)
+    print("\n\n\n")
+    s = ""
+    while s not in ["Y", "N"]:
+        s = input("Copy to clipboard? (Y/N):").upper()
+    if s == "Y":
+        from pandas.io import clipboards
+
+        clipboards.to_clipboard(obj=command, excel=False)
+
+
+if __name__ == "__main__":
+    main()

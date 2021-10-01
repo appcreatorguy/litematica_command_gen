@@ -26,26 +26,21 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
-clean: clean-build clean-pyc clean-test ## remove all build, coverage and Python artifacts
+clean: clean-build clean-pyc clean-pyinstaller ## Remove all build and python artifacts
 
 clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+	rm -rf *.egg-info/
+	rm -rf dist/
+	rm -rf build/
+	#find . -name '*.egg-info' -exec rm -fr {} +
+	#find . -name '*.egg' -exec rm -rf {} +
+	#find . -name '*.eggs' -exec rm -fr {} +
 
 clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
+	python -Bc "import pathlib; import shutil; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('__pycache__')]"
 
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-	rm -fr .pytest_cache
+clean-pyinstaller: ## remove pyinstaller artifacts
+	rm -rf *.spec
 
 lint: ## check style with flake8, isort and black
 	flake8 litematica_command_gen tests

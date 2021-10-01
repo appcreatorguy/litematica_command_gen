@@ -2,9 +2,10 @@
 import csv
 from pathlib import Path
 
-import mc_id_converter as mc
 import pandas as pd
 from mecha import Mecha
+
+from . import mc_id_converter as mc
 
 mecha_obj = Mecha()
 
@@ -50,7 +51,7 @@ COMMAND_END = """
 """
 
 
-def main(shulkerbox, chest, file, verbose):
+def generate_command_from_file(shulkerbox, chest, file, verbose):
     """Main Entry point for generator
 
     Args:
@@ -78,7 +79,7 @@ def main(shulkerbox, chest, file, verbose):
         global verbosity
         verbosity = True
 
-    print("Usingshulkerbox: {}".format(usingshulkerbox))
+    print("Usingshulkerbox: {}".format(usingshulkerbox)) if verbose else None
 
     data_dict = read_csv_file(file)
     print("File read.") if verbose else None
