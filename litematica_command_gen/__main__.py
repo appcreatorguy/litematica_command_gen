@@ -21,4 +21,4 @@ if __name__ == "__main__":
     if args["--verbose"]:
         print("Running with arguments: ", end="")
         print("".join(["{0}: {1}, ".format(k, v) for k, v in args.items()]))
-    main(args["shulkerbox"], args["chest"], args["<file>"], args["--verbose"])
+    command = main(args["shulkerbox"], args["chest"], args["<file>"], args["--verbose"])

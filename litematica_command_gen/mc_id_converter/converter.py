@@ -8,6 +8,7 @@ import pandas as pd
 thisfile = os.path.dirname(os.path.abspath(__file__))
 url = Path(thisfile).joinpath(Path("data/block_data.html")).read_text()
 table = None
+MINECRAFT_NAMESPACE = "minecraft"
 
 
 def block_name_to_id(block_name):
@@ -27,17 +28,17 @@ def block_name_to_id(block_name):
 
     # SPECIAL CASES FOR BLOCKS THAT DON'T HAVE ITEMS
     if block_name == "Redstone Dust":
-        return "minecraft:redstone"
+        return ":".join([MINECRAFT_NAMESPACE, "redstone"])
     elif block_name == "Water Bucket":
-        return "minecraft:water_bucket"
+        return ":".join([MINECRAFT_NAMESPACE, "water_bucket"])
     elif block_name == "Lava Bucket":
-        return "minecraft:lava_bucket"
+        return ":".join([MINECRAFT_NAMESPACE, "lava_bucket"])
     elif block_name == "Redstone Block":
-        return "minecraft:redstone_block"
+        return ":".join([MINECRAFT_NAMESPACE, "redstone_block"])
 
     for i in range(len(table.Block)):
         if " ".join(table.Block[i].split()) == block_name:
-            return ":".join(["minecraft", table.ResourceLocation[i]])
+            return ":".join([MINECRAFT_NAMESPACE, table.ResourceLocation[i]])
 
 
 def generate_table():
